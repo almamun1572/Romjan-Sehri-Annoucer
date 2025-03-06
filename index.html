@@ -106,86 +106,88 @@
     <button id="play-button" class="button" onclick="enableAudio()">🔊 অডিও চালু করুন</button>
 
     <script>
-        let audioEnabled = false;
-        let sehriTime = localStorage.getItem("sehriTime") || null;
+let audioEnabled = false;
+let sehriTime = null;
+let globalAudio = new Audio(); // গ্লোবাল অডিও অবজেক্ট
 
-        const messages = [
-            { offset: "02:15:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা ১৫ মিনিট সময় বাকি আছে", audio: "sehri_2_15.mp3" },
-            { offset: "02:00:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা বাকি আছে", audio: "sehri_2.m4a" },
-            { offset: "01:45:00", text: "মাত্র ১ ঘন্টা ৪৫ মিনিট সময় বাকি আছে", audio: "sehri_1_45.m4a" },
-            { offset: "01:30:00", text: "এক ঘন্টা ত্রিশ মিনিট সময় বাকি আছে", audio: "sehri_1_30.m4a" },
-            { offset: "01:15:00", text: "মাত্র ১ ঘন্টা ১৫ মিনিট সময় বাকি", audio: "sehri.mp3" }
-        ];
+let messages = [
+    { offset: "02:15:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা ১৫ মিনিট সময় বাকি আছে", audio: "sehri_2_15.mp3" },
+    { offset: "02:00:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা বাকি আছে", audio: "sehri_2.mp3" },
+    { offset: "01:45:00", text: "মাত্র ১ ঘন্টা ৪৫ মিনিট সময় বাকি আছে", audio: "sehri_1_45.mp3" },
+    { offset: "01:30:00", text: "এক ঘন্টা ত্রিশ মিনিট সময় বাকি আছে", audio: "sehri_1_30.mp3" },
+    { offset: "01:15:00", text: "মাত্র ১ ঘন্টা ১৫ মিনিট সময় বাকি", audio: "sehri_1_15.mp3" }
+];
 
-        function initializeApp() {
-            updateTime();
-            if (sehriTime) {
-                document.getElementById("sehri-time").value = sehriTime.slice(0, 5);
-            }
-        }
-
-     function enableAudio() {
+function enableAudio() {
     audioEnabled = true;
     document.getElementById("play-button").style.display = "none";
 
-    // iOS Safari-তে অডিও অনুমতি পেতে ছোট সাউন্ড প্লে করা
-    let dummyAudio = new Audio();
-    dummyAudio.src = "sehri.mp3"; // তোমার ফাইলের যেকোনো একটি অডিও
-    dummyAudio.play().catch(error => console.log("iOS Autoplay Issue Fixed"));
+    // iPhone-এ নিশ্চিত করতে ডামি অডিও প্লে করানো
+    globalAudio.src = "sehri_2.mp3"; // যেকোনো একটি ফাইল ব্যবহার করো
+    globalAudio.load();
+    globalAudio.play().catch(error => console.log("iOS Autoplay Issue Fixed"));
 }
 
+function setSehriTime() {
+    let userTime = document.getElementById("sehri-time").value;
+    if (userTime) {
+        sehriTime = userTime + ":00"; // সেকেন্ড যোগ করা হলো
+        alert("সেহরির সময় সেট করা হয়েছে: " + userTime);
+    }
+}
 
-        function setSehriTime() {
-            let userTime = document.getElementById("sehri-time").value;
-            if (userTime) {
-                sehriTime = userTime + ":00"; 
-                localStorage.setItem("sehriTime", sehriTime);
-                alert("সেহরির সময় সেট করা হয়েছে: " + userTime);
+function updateTime() {
+    let now = new Date();
+    let hours = now.getHours().toString().padStart(2, '0');
+    let minutes = now.getMinutes().toString().padStart(2, '0');
+    let seconds = now.getSeconds().toString().padStart(2, '0');
+    let formattedTime = `${hours}:${minutes}:${seconds}`;
+    document.getElementById("current-time").innerText = "বর্তমান সময়: " + formattedTime;
+
+    if (sehriTime) {
+        messages.forEach(msg => {
+            let targetTime = subtractTime(sehriTime, msg.offset);
+            if (formattedTime === targetTime) {
+                showMessage(msg.text, msg.audio);
             }
-        }
+        });
+    }
+}
 
-        function updateTime() {
-            let now = new Date();
-            let formattedTime = now.toLocaleTimeString('bn-BD', { hour12: false });
-            document.getElementById("current-time").innerText = "বর্তমান সময়: " + formattedTime;
+function subtractTime(baseTime, offset) {
+    let [baseH, baseM, baseS] = baseTime.split(":").map(Number);
+    let [offH, offM, offS] = offset.split(":").map(Number);
 
-            if (sehriTime) {
-                messages.forEach(msg => {
-                    let targetTime = subtractTime(sehriTime, msg.offset);
-                    if (formattedTime === targetTime) {
-                        showMessage(msg.text, msg.audio);
-                    }
-                });
-            }
+    let date = new Date();
+    date.setHours(baseH, baseM, baseS);
+    date.setHours(date.getHours() - offH);
+    date.setMinutes(date.getMinutes() - offM);
+    date.setSeconds(date.getSeconds() - offS);
 
-            setTimeout(updateTime, 1000);
-        }
+    let h = date.getHours().toString().padStart(2, '0');
+    let m = date.getMinutes().toString().padStart(2, '0');
+    let s = date.getSeconds().toString().padStart(2, '0');
 
-        function subtractTime(baseTime, offset) {
-            let [baseH, baseM, baseS] = baseTime.split(":").map(Number);
-            let [offH, offM, offS] = offset.split(":").map(Number);
+    return `${h}:${m}:${s}`;
+}
 
-            let date = new Date();
-            date.setHours(baseH - offH, baseM - offM, baseS - offS);
-
-            return date.toLocaleTimeString('bn-BD', { hour12: false });
-        }
-
-        function showMessage(text, audioFile) {
+function showMessage(text, audioFile) {
     let messageElement = document.getElementById("message");
     messageElement.innerText = text;
     messageElement.classList.add("show");
 
     if (audioEnabled) {
-        let audio = new Audio(audioFile);
-        audio.load(); // অডিও নিশ্চিতভাবে লোড করানো হচ্ছে
-        audio.play().catch(error => console.log("iOS Playback Issue: ", error));
+        globalAudio.src = audioFile; // গ্লোবাল অডিও অবজেক্ট ব্যবহার করা
+        globalAudio.load();
+        globalAudio.play().catch(error => console.log("iOS Playback Issue: ", error));
 
-        audio.onended = function () {
+        globalAudio.onended = function () {
             messageElement.classList.remove("show");
         };
     }
 }
+
+setInterval(updateTime, 1000);
 
     </script>
 </body>
