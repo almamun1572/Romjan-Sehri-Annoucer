@@ -124,10 +124,16 @@
             }
         }
 
-        function enableAudio() {
-            audioEnabled = true;
-            document.getElementById("play-button").style.display = "none";
-        }
+     function enableAudio() {
+    audioEnabled = true;
+    document.getElementById("play-button").style.display = "none";
+
+    // iOS Safari-তে অডিও অনুমতি পেতে ছোট সাউন্ড প্লে করা
+    let dummyAudio = new Audio();
+    dummyAudio.src = "sehri.mp3"; // তোমার ফাইলের যেকোনো একটি অডিও
+    dummyAudio.play().catch(error => console.log("iOS Autoplay Issue Fixed"));
+}
+
 
         function setSehriTime() {
             let userTime = document.getElementById("sehri-time").value;
@@ -166,16 +172,21 @@
         }
 
         function showMessage(text, audioFile) {
-            let messageElement = document.getElementById("message");
-            messageElement.innerText = text;
-            messageElement.classList.add("show");
+    let messageElement = document.getElementById("message");
+    messageElement.innerText = text;
+    messageElement.classList.add("show");
 
-            if (audioEnabled) {
-                let audio = new Audio(audioFile);
-                audio.play();
-                audio.onended = () => messageElement.classList.remove("show");
-            }
-        }
+    if (audioEnabled) {
+        let audio = new Audio(audioFile);
+        audio.load(); // অডিও নিশ্চিতভাবে লোড করানো হচ্ছে
+        audio.play().catch(error => console.log("iOS Playback Issue: ", error));
+
+        audio.onended = function () {
+            messageElement.classList.remove("show");
+        };
+    }
+}
+
     </script>
 </body>
 </html>
