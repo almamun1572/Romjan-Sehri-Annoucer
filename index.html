@@ -1,10 +1,12 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>সেহরির সময় গণনা</title>
-    <style>
+   <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap');
+
         body {
             font-family: 'Noto Sans Bengali', sans-serif;
             display: flex;
@@ -18,19 +20,19 @@
             padding: 20px;
         }
         h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             margin-bottom: 10px;
         }
         .time-display {
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 20px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+            box-shadow: 0px 4px 15px rgba(255, 255, 255, 0.3);
         }
         .message {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.5s, transform 0.5s;
@@ -40,71 +42,140 @@
             opacity: 1;
             transform: translateY(0);
         }
-        .play-button {
-            margin-top: 20px;
-            padding: 12px 24px;
-            font-size: 1.2rem;
+        .button {
+            margin-top: 12px;
+            padding: 10px 20px;
+            font-size: 1rem;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             transition: 0.3s;
         }
-        .play-button:hover {
+        .button:hover {
             background-color: #45a049;
         }
+        input[type="time"] {
+            font-size: 1.1rem;
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+            text-align: center;
+            margin-top: 10px;
+            width: 180px;
+        }
+
+        /* মোবাইলের জন্য রেস্পনসিভ ডিজাইন */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .time-display {
+                font-size: 1.5rem;
+                padding: 10px 20px;
+            }
+            .message {
+                font-size: 1.2rem;
+            }
+            .button {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
+            input[type="time"] {
+                font-size: 1rem;
+                padding: 7px;
+                width: 160px;
+            }
+        }
     </style>
+</head>
+<body onload="initializeApp()">
+    <h1>সেহরির সময় গণনা</h1>
+    <div class="time-display" id="current-time"></div>
+    
+    <p class="message" id="message"></p>
+
+    <input type="time" id="sehri-time">
+    <button class="button" onclick="setSehriTime()">⏰ সেহরির সময় সেট করুন</button>
+
+    <button id="play-button" class="button" onclick="enableAudio()">🔊 অডিও চালু করুন</button>
+
     <script>
         let audioEnabled = false;
+        let sehriTime = localStorage.getItem("sehriTime") || null;
+
+        const messages = [
+            { offset: "02:15:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা ১৫ মিনিট সময় বাকি আছে", audio: "sehri_2_15.m4a" },
+            { offset: "02:00:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা বাকি আছে", audio: "sehri_2.m4a" },
+            { offset: "01:45:00", text: "মাত্র ১ ঘন্টা ৪৫ মিনিট সময় বাকি আছে", audio: "sehri_1_45.m4a" },
+            { offset: "01:30:00", text: "এক ঘন্টা ত্রিশ মিনিট সময় বাকি আছে", audio: "sehri_1_30.m4a" },
+            { offset: "01:15:00", text: "মাত্র ১ ঘন্টা ১৫ মিনিট সময় বাকি", audio: "sehri_1_15.m4a" }
+        ];
+
+        function initializeApp() {
+            updateTime();
+            if (sehriTime) {
+                document.getElementById("sehri-time").value = sehriTime.slice(0, 5);
+            }
+        }
 
         function enableAudio() {
             audioEnabled = true;
             document.getElementById("play-button").style.display = "none";
         }
 
-        function updateTime() {
-            let now = new Date();
-            let hours = now.getHours();
-            let minutes = now.getMinutes();
-            let seconds = now.getSeconds();
-            let formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            document.getElementById("current-time").innerText = "বর্তমান সময়: " + formattedTime;
-
-            let messages = {
-                "13:13:20": { text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা ১৫ মিনিট সময় বাকি আছে", audio: "sehri_2_15.m4a" },
-                "03:00:00": { text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা বাকি আছে", audio: "sehri_2.m4a" },
-                "03:15:00": { text: "মাত্র ১ ঘন্টা ৪৫ মিনিট সময় বাকি আছে", audio: "sehri_1_45.m4a" },
-                "03:30:00": { text: "এক ঘন্টা ত্রিশ মিনিট সময় বাকি আছে", audio: "sehri_1_30.m4a" },
-                "03:45:00": { text: "মাত্র ১ ঘন্টা ১৫ মিনিট সময় বাকি", audio: "sehri_1_15.m4a" },
-                "04:00:00": { text: "মাত্র ১ ঘন্টা বাকি!", audio: "sehri_1.m4a" },
-                "04:30:00": { text: "সেহরির শেষ সময় খুব কাছাকাছি!", audio: "sehri_last.m4a" }
-            };
-
-            let messageElement = document.getElementById("message");
-
-            if (messages[formattedTime]) {
-                messageElement.innerText = messages[formattedTime].text;
-                messageElement.classList.add("show");
-
-                if (audioEnabled) {
-                    let audio = new Audio(messages[formattedTime].audio);
-                    audio.play();
-
-                    audio.onended = function() {
-                        messageElement.classList.remove("show");
-                    };
-                }
+        function setSehriTime() {
+            let userTime = document.getElementById("sehri-time").value;
+            if (userTime) {
+                sehriTime = userTime + ":00"; 
+                localStorage.setItem("sehriTime", sehriTime);
+                alert("সেহরির সময় সেট করা হয়েছে: " + userTime);
             }
         }
 
-        setInterval(updateTime, 1000);
+        function updateTime() {
+            let now = new Date();
+            let formattedTime = now.toLocaleTimeString('bn-BD', { hour12: false });
+            document.getElementById("current-time").innerText = "বর্তমান সময়: " + formattedTime;
+
+            if (sehriTime) {
+                messages.forEach(msg => {
+                    let targetTime = subtractTime(sehriTime, msg.offset);
+                    if (formattedTime === targetTime) {
+                        showMessage(msg.text, msg.audio);
+                    }
+                });
+            }
+
+            setTimeout(updateTime, 1000);
+        }
+
+        function subtractTime(baseTime, offset) {
+            let [baseH, baseM, baseS] = baseTime.split(":").map(Number);
+            let [offH, offM, offS] = offset.split(":").map(Number);
+
+            let date = new Date();
+            date.setHours(baseH - offH, baseM - offM, baseS - offS);
+
+            return date.toLocaleTimeString('bn-BD', { hour12: false });
+        }
+
+        function showMessage(text, audioFile) {
+            let messageElement = document.getElementById("message");
+            messageElement.innerText = text;
+            messageElement.classList.add("show");
+
+            if (audioEnabled) {
+                let audio = new Audio(audioFile);
+                audio.play();
+                audio.onended = () => messageElement.classList.remove("show");
+            }
+        }
     </script>
-</head>
-<body onload="updateTime()">
-    <h1>সেহরির সময় গণনা</h1>
-    <div class="time-display" id="current-time"></div>
-    <p class="message" id="message"></p>
-    <button id="play-button" class="play-button" onclick="enableAudio()">🔊 অডিও চালু করুন</button>
 </body>
 </html>
