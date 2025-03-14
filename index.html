@@ -260,7 +260,7 @@ let sehriTime = null;
 let globalAudio = new Audio(); // গ্লোবাল অডিও অবজেক্ট
 
 let messages = [
-    { offset: "02:15:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা ১৫ মিনিট সময় বাকি আছে", audio: "sehri_2_15.mp3" },
+    { offset: "02:16:45", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা ১৫ মিনিট সময় বাকি আছে", audio: "sehri_2_15.mp3" },
     { offset: "02:00:00", text: "সেহরি খাওয়ার আর মাত্র ২ ঘন্টা বাকি আছে", audio: "sehri_2.mp3" },
     { offset: "01:45:00", text: "মাত্র ১ ঘন্টা ৪৫ মিনিট সময় বাকি আছে", audio: "sehri_1_45.mp3" },
     { offset: "01:30:00", text: "এক ঘন্টা ত্রিশ মিনিট সময় বাকি আছে", audio: "sehri_1_30.mp3" },
@@ -269,7 +269,8 @@ let messages = [
     { offset: "00:45:00", text: "সেহরি খাওয়ার আর মাত্র ৪৫ মিনিট সময় বাকি আছে", audio: "sehri_45.mp3" },
     { offset: "00:30:00", text: "সেহরি খাওয়ার আর মাত্র ৩০ মিনিট সময় বাকি আছে", audio: "sehri_30.mp3" },
     { offset: "00:15:00", text: "সেহরি খাওয়ার আর মাত্র ১৫ মিনিট সময় বাকি আছে", audio: "sehri_15.mp3" },
-    { offset: "00:05:00", text: "সেহরি খাওয়ার আর মাত্র পাঁচ মিনিট সময় বাকি আছে", audio: "sehri_5.mp3" }
+    { offset: "00:05:00", text: "সেহরি খাওয়ার আর মাত্র পাঁচ মিনিট সময় বাকি আছে", audio: "sehri_5.mp3" },
+    { offset: "00:00:05", text: "সেহরি খাওয়ার সময় শেষ হয়ে গিয়েছে", audio: "sehri_0.mp3" }
 ];
 
 
@@ -313,7 +314,7 @@ function enableAudio() {
     document.getElementById("play-button").style.display = "none";
 
     // iPhone-এ নিশ্চিত করতে ডামি অডিও প্লে করানো
-    globalAudio.src = "sehri_2.mp3"; // যেকোনো একটি ফাইল ব্যবহার করো
+    globalAudio.src = "sehri.mp3"; // যেকোনো একটি ফাইল ব্যবহার করো
     globalAudio.load();
     globalAudio.play().catch(error => console.log("iOS Autoplay Issue Fixed"));
 }
